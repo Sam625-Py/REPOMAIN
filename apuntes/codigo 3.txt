@@ -1,0 +1,17 @@
+clases y estructuras
+typedef struct{
+double x;
+double y;
+double z;
+}point;
+
+class point {
+private:
+    double x;
+    double y;
+    double z;
+public:
+    point() {}
+
+}; el constructor siempre tiene el nombre de la clases
+

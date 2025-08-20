@@ -1,0 +1,40 @@
+ARRAYS
+INT A[3]; arreglo de 3 elementos
+A[0]=42;
+a en la posicion 0 tiene el 42
+la posicion cero es como la posicion del primer dato
+los arreglos son de tamaño constante
+
+stack y heap
+
+int *h = new int(tambien pede ser double etc)[3]; el arreglo no tiene nombre pero sabemos
+                    su direccion de memoria porque esta guardada en h en heap
+                    el arreglo int se crea durante la ejecucion
+
+new : es un llamado al sistema operativo para reservar memoria
+para liberar la memoria que ocupo el new en el heap se usa la funcion free(h); h en este caso por el puntero
+tambien se puede usar delete[] h(o puntero usado con new);
+pero no se debe volver a usar esa direccion de la memoria que se deleteo
+
+int main(){
+
+    int *h = new int[3]; //crea el arreglo en heap
+    for(int i = 0, i < 3,i++){
+        h[i] = i; //lleno el arreglo
+    }
+    delete[]h; //elimina el arreglo en h(se debe hacer antes de crear otro arreglo en h para que no se desperdicie memoria de el arreglo anterior porque pierde su direccion)
+    h = new int [4]; // crea un nuevo arreglo en h
+
+    delete[]h;
+//matador de memoria
+char *h
+for(int i=0; i <(1024 * 1024); i++){
+    h = new char[1024*1024];
+    cout<<"ciclo"<<i<<endl;
+    delete[]h;//si se quiere borrar el array anterior
+//    
+}
+
+
+    return 0;
+}
