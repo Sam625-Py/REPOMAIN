@@ -1,15 +1,49 @@
 #include <iostream>
 using namespace std;
+class vector{
+    private:
+    int *storage;//almacena los elementos del vector
+    unsigned int sz;//numero actual de elementos en el vector
+    usigned int capacity;//capacidad de storage, es decir, el numero maximo de elementos que puede almacenar
+
+    public:      //si llama a storage imprime lo que haya en su direccion
+    vector(){
+        storage = new int[5];//heap
+        sz=0;
+        capacity=5;
+    }
+    void push_back(int value){
+        if(sz >= capacity) { //verifica si el vector esta lleno
+            resize();
+        }
+        storage[sz] = value;//en la posicion de el valor de sz se inserta el valor que se puso en el v.push_back
+        sz++;               //por ejemplo si sz empieza desde cero el primer valor que entre va a la posicion 0 del array
+    }
+    private:
+    void resize(){//se creo porque mi vector se quedo sin espacio y nesecito almacenar mas elementos
+        capacity *= 2;
+        int *new_storage = new int[capacity];
+        for(unsigned int i = 0; i < sz; i++) {
+            new_storage[i] = storage[i];
+        }
+        delete[] storage;//storage almacena una direccion que tiene el arreglo creado el deleto no borra la direccion sino lo que almaacena esta direccion
+        storage = new_storage;//se creo el nuevo arreglo ampliado y su direccion que esta en new storage se almacena en storage
+    }
+
+    }
+};
 
 int main() {
-    char x;
-    int *h;
-    
-for(int i=0; i < (1024 * 1024); i++){
-    h = new int[1024*1024];
-    cout<<"ciclo "<<i<<endl;
-    delete[]h;
-}
+
+    vector v;
+    for(int i=0; i<5; i++){
+        v.push_back(i*i);
+    }
+    //v.push_back(20);//este no se puede poner porque el for ya lleno el arreglo de 5 elementos
+    //no habria espacio y suelta el error, con la funcion rezise esto no ocurre porque se agrando el array
+
+
+
     system("pause");
 
     return 0;

@@ -30,5 +30,7 @@ int main()
     */
     investigan sobre la flecha
     ej: q -> x = 10;
+    (q*).point();es lo mismo que la flechita de antes 
+    
     
     

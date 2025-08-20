@@ -4,6 +4,8 @@ A[0]=42;
 a en la posicion 0 tiene el 42
 la posicion cero es como la posicion del primer dato
 los arreglos son de tamaño constante
+sus elementos son del mismo tipo y estan almacenados consecutivamente en la memoria
+
 
 stack y heap
 
