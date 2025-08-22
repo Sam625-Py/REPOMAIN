@@ -1,20 +1,21 @@
 #include <iostream>
 using namespace std;
+template<typename T>
 class vector{
     private:
-    int *storage;//almacena los elementos del vector
+    T *storage;//almacena los elementos del vector
     unsigned int sz;//numero actual de elementos en el vector
     unsigned int capacity;//capacidad de storage, es decir, el numero maximo de elementos que puede almacenar
     float policy;//le permite al usuario elegir como va a crecer el vector de la forma vector v(n, policy);
 
     public:      //si llama a storage imprime lo que haya en su direccion
     vector(){
-        storage = new int[5];//heap
+        storage = new T[5];//heap
         sz=0;
         capacity=5;
         policy=1.7;
     }
-    void push_back(int value){
+    void push_back(T value){
         if(sz >= capacity) { //verifica si el vector esta lleno
             resize();
         }
@@ -22,7 +23,7 @@ class vector{
         sz++;               //por ejemplo si sz empieza desde cero el primer valor que entre va a la posicion 0 del array
     }
     vector(unsigned int c, float p=1.7){//crea un vector con capacidad inicial c de la forma de llamado: vector v(n);
-        storage = new int[c];
+        storage = new T[c];
         sz = 0;
         capacity = c;
         policy = p;
@@ -30,7 +31,7 @@ class vector{
     private:
     void resize(){//se creo porque mi vector se quedo sin espacio y nesecito almacenar mas elementos
         capacity *= policy;
-        int *new_storage = new int[capacity];
+        T *new_storage = new T[capacity];
         for(unsigned int i = 0; i < sz; i++) {
             new_storage[i] = storage[i];
         }
@@ -41,7 +42,7 @@ class vector{
     void shrink_to_fit(){
         if(sz < capacity) {
             capacity = sz;
-            int *new_storage = new int[capacity];
+            T *new_storage = new T[capacity];
             for(unsigned int i = 0; i < sz; i++) {
                 new_storage[i] = storage[i];
             }
@@ -51,15 +52,27 @@ class vector{
     }
 };
 
+class point{
+    private:
+    double x;
+    double y;
+
+    public:
+    point(double x=0, double y=0){
+        this->x = x;
+        this->y = y;       
+    }
+};
+
 
 int main() {
 
-    vector v;
+    vector<int> v;
     for(int i=0; i<25; i++){
         v.push_back(i*i);
     }; 
-    v.shrink_to_fit(); //reduce la capacidad del vector a su tamaño actual
-   
+    v.shrink_to_fit(); //reduce la capacidad del vector a su tamaño actual(sz)
+    point p(3.0, 4.0);
     //v.push_back(20);//este no se puede poner porque el for ya lleno el arreglo de 5 elementos
     //no habria espacio y suelta el error, con la funcion rezise esto no ocurre porque se agrando el array aunque deja basura a la memoria
 
