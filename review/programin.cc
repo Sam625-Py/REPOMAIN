@@ -5,12 +5,14 @@ class vector{
     int *storage;//almacena los elementos del vector
     unsigned int sz;//numero actual de elementos en el vector
     unsigned int capacity;//capacidad de storage, es decir, el numero maximo de elementos que puede almacenar
+    float policy;//le permite al usuario elegir como va a crecer el vector de la forma vector v(n, policy);
 
     public:      //si llama a storage imprime lo que haya en su direccion
     vector(){
         storage = new int[5];//heap
         sz=0;
         capacity=5;
+        policy=1.7;
     }
     void push_back(int value){
         if(sz >= capacity) { //verifica si el vector esta lleno
@@ -19,15 +21,15 @@ class vector{
         storage[sz] = value;//en la posicion de el valor de sz se inserta el valor que se puso en el v.push_back
         sz++;               //por ejemplo si sz empieza desde cero el primer valor que entre va a la posicion 0 del array
     }
-    void print(){
-        for(unsigned int i = 0; i < sz; i++) {
-            cout << storage[i] << " ";
-        }
-        cout << endl;
+    vector(unsigned int c, float p=1.7){//crea un vector con capacidad inicial c de la forma de llamado: vector v(n);
+        storage = new int[c];
+        sz = 0;
+        capacity = c;
+        policy = p;
     }
     private:
     void resize(){//se creo porque mi vector se quedo sin espacio y nesecito almacenar mas elementos
-        capacity *= 2;
+        capacity *= policy;
         int *new_storage = new int[capacity];
         for(unsigned int i = 0; i < sz; i++) {
             new_storage[i] = storage[i];
@@ -35,20 +37,31 @@ class vector{
         delete[] storage;//storage almacena una direccion que tiene el arreglo creado el deleto no borra la direccion sino lo que almaacena esta direccion
         storage = new_storage;//se creo el nuevo arreglo ampliado y su direccion que esta en new storage se almacena en storage
     }
-
-    };
+    public:
+    void shrink_to_fit(){
+        if(sz < capacity) {
+            capacity = sz;
+            int *new_storage = new int[capacity];
+            for(unsigned int i = 0; i < sz; i++) {
+                new_storage[i] = storage[i];
+            }
+            delete[] storage;
+            storage = new_storage;
+        }
+    }
+};
 
 
 int main() {
 
     vector v;
-    for(int i=0; i<10; i++){
+    for(int i=0; i<25; i++){
         v.push_back(i*i);
-    };
-    printf("Elementos del vector: ");
-    v.print();  
+    }; 
+    v.shrink_to_fit(); //reduce la capacidad del vector a su tamaño actual
+   
     //v.push_back(20);//este no se puede poner porque el for ya lleno el arreglo de 5 elementos
-    //no habria espacio y suelta el error, con la funcion rezise esto no ocurre porque se agrando el array
+    //no habria espacio y suelta el error, con la funcion rezise esto no ocurre porque se agrando el array aunque deja basura a la memoria
 
 
 
