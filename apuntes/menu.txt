@@ -1,0 +1,266 @@
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
+using namespace std;
+
+//ESTRUCTURA
+struct Vehiculo {
+    char placa[10];
+    char modelo[20];
+    char marca[20];
+    int año;
+    char color[20];
+    char tipo;    // P = propio, C = consignado
+    long valor;
+    char estado;  // A = activo, E = eliminado
+};
+
+//FUNCIONES
+void mostrarVehiculo(struct Vehiculo v) {
+    cout << "\nPlaca: " << v.placa;
+    cout << "\nMarca: " << v.marca;
+    cout << "\nModelo: " << v.modelo;
+    cout << "\nAnio: " << v.año;
+    cout << "\nColor: " << v.color;
+    cout << "\nTipo: " << v.tipo;
+    cout << "\nValor: " << v.valor;
+    cout << "\nEstado: " << v.estado << "\n";
+}
+
+void mostrarbasededatos(char archivo[]){
+    struct Vehiculo v;
+    FILE *f = fopen(archivo, "rb");
+    if (f == NULL){
+        cout << "No existe el archivo\n";
+        return;
+    }
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)){
+        if (v.estado == 'A'){
+            mostrarVehiculo(v);
+        }if(v.estado == 'E'){
+            mostrarVehiculo(v);
+        }
+    }
+    fclose(f);
+
+
+}
+
+void cantidaddevehiculosPoC(char archivo[]) {
+    struct Vehiculo v;
+    int propios = 0, consignados = 0;
+    FILE *f = fopen(archivo, "rb");
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (v.estado == 'A') {
+            if (v.tipo == 'P')// esta if evalua si el tipo del vehículo es 'P' (propio) y, si es así, incrementa el contador de vehículos propios. Si el tipo es 'C' (consignado), incrementa el contador de vehículos consignados.
+                propios++;
+            else if(v.tipo == 'C')
+                consignados++;
+        }
+    }
+
+    fclose(f);
+
+    cout << "Cantidad de vehiculos propios: " << propios << "\n";
+    cout << "Cantidad de vehiculos consignados: " << consignados << "\n";
+}
+
+
+void registrarVehiculo(char archivo[]) {
+    struct Vehiculo v;
+    FILE *f = fopen(archivo, "ab");//ab es para abrir el archivo en modo de escritura al final del archivo (append binary). Si el archivo no existe, se crea. Si existe, se agrega al final sin sobrescribir.
+    //fopen es una función de la biblioteca estándar de C que se utiliza para abrir un archivo. Toma dos argumentos: el nombre del archivo y el modo de apertura. El modo "ab" significa "append binary", lo que indica que el archivo se abrirá para escritura en modo binario y los datos se agregarán al final del archivo existente, sin sobrescribirlo. Si el archivo no existe, se creará uno nuevo.
+    if (f == NULL) {
+        cout << "Error al abrir el archivo\n";
+        return;
+    }
+
+    cout << "Placa: "; cin >> v.placa;
+    cout << "Marca: "; cin >> v.marca;
+    cout << "Modelo: "; cin >> v.modelo;
+    cout << "Anio: "; cin >> v.año;
+    cout << "Color: "; cin >> v.color;
+    cout << "Tipo (P/C): "; cin >> v.tipo;
+    v.tipo = toupper(v.tipo);//toupper es una función de la biblioteca estándar de C que se utiliza para convertir un carácter a mayúscula. Toma un argumento: el carácter a convertir. Devuelve el carácter convertido a mayúscula si es una letra minúscula, o el mismo carácter si no es una letra minúscula.
+    cout << "Valor: "; cin >> v.valor;
+
+    v.estado = 'A';
+
+    fwrite(&v, sizeof(struct Vehiculo), 1, f);//fread y fwrite tienen los mismos 4 argumentos , la direccion de la variable a leer o escribir , el tamaño de cada elemento a leer o escribir , la cantidad de elementos a leer o escribir y el puntero al archivo
+    fclose(f);
+
+    cout << "Vehiculo registrado correctamente\n";
+}
+
+void consultarPorMarcaModelo(char archivo[]) {
+    struct Vehiculo v;
+    char marca[20], modelo[20];
+    FILE *f = fopen(archivo, "rb");
+
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+
+    cout << "Marca: "; cin >> marca;
+    cout << "Modelo: "; cin >> modelo;
+
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (v.estado == 'A' &&
+            strcmp(v.marca, marca) == 0 &&//strcmp es una función de la biblioteca estándar de C que se utiliza para comparar dos cadenas de caracteres. Toma dos argumentos: las cadenas a comparar. Devuelve un valor entero que indica la relación entre las cadenas: 0 si son iguales, un valor negativo si la primera cadena es menor que la segunda, y un valor positivo si la primera cadena es mayor que la segunda.
+            strcmp(v.modelo, modelo) == 0) {
+            mostrarVehiculo(v);
+        }
+    }
+
+    fclose(f);
+}
+
+void consultarPorRangoPrecio(char archivo[]) {
+    struct Vehiculo v;
+    long min, max;
+    FILE *f = fopen(archivo, "rb");
+
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+
+    cout << "Precio minimo: "; cin >> min;
+    cout << "Precio maximo: "; cin >> max;
+
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (v.estado == 'A' && v.valor >= min && v.valor <= max) {
+            mostrarVehiculo(v);
+        }
+    }
+
+    fclose(f);
+}
+
+void consultarPorTipo(char archivo[]) {
+    struct Vehiculo v;
+    char tipo;
+    FILE *f = fopen(archivo, "rb");
+
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+
+    cout << "Tipo (P/C): ";
+    cin >> tipo;
+    tipo = toupper(tipo);
+
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (v.estado == 'A' && v.tipo == tipo) {
+            mostrarVehiculo(v);
+        }
+    }
+
+    fclose(f);
+}
+
+void modificarVehiculo(char archivo[]) {
+    struct Vehiculo v;
+    char placa[10];
+    FILE *f = fopen(archivo, "rb+");
+
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+
+    cout << "Placa del vehiculo a modificar: ";
+    cin >> placa;
+
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (strcmp(v.placa, placa) == 0 && v.estado == 'A') {//strcmp es una función de la biblioteca estándar de C que se utiliza para comparar dos cadenas de caracteres. Toma dos argumentos: las cadenas a comparar. Devuelve un valor entero que indica la relación entre las cadenas: 0 si son iguales, un valor negativo si la primera cadena es menor que la segunda, y un valor positivo si la primera cadena es mayor que la segunda.
+            cout << "Nuevo valor: ";
+            cin >> v.valor;
+            cout << "Nuevo tipo (P/C): ";
+            cin >> v.tipo;
+
+            fseek(f, (long)-sizeof(struct Vehiculo), SEEK_CUR);//devuelve el puntero al archivo a la posición anterior a la lectura del registro actual, para que la siguiente escritura sobrescriba el registro correcto.
+            fwrite(&v, sizeof(struct Vehiculo), 1, f);//sizeof (struct Vehiculo) devuelve el tamaño en bytes de la estructura Vehiculo, lo que indica cuánto espacio ocupa cada registro en el archivo. Al usar este tamaño en fread y fwrite, se asegura que se lean y escriban registros completos de la estructura Vehiculo.
+
+            cout << "Vehiculo modificado\n";
+            break;
+        }
+    }
+
+    fclose(f);
+}
+
+void eliminarActivarVehiculo(char archivo[]) {
+    struct Vehiculo v;
+    char placa[10];
+    FILE *f = fopen(archivo, "rb+");
+
+    if (f == NULL) {
+        cout << "No existe el archivo\n";
+        return;
+    }
+
+    cout << "Placa del vehiculo: ";
+    cin >> placa;
+
+    while (fread(&v, sizeof(struct Vehiculo), 1, f)) {
+        if (strcmp(v.placa, placa) == 0) {
+            if (v.estado == 'A')
+                v.estado = 'E';
+            else
+                v.estado = 'A';
+
+            fseek(f,(long)-sizeof(struct Vehiculo), SEEK_CUR);
+            fwrite(&v, sizeof(struct Vehiculo), 1, f);
+
+            cout << "Estado actualizado\n";
+            break;
+        }
+    }
+
+    fclose(f);
+}
+
+//MAIN
+
+int main() {
+     char archivo[] = "vehiculos.dat";//define un arreglo de caracteres llamado archivo que contiene el nombre del archivo donde se almacenarán los datos de los vehículos. Este archivo se utilizará en las funciones para leer y escribir los registros de los vehículos.
+    int opcion;//crea una variable entera llamada opcion que se utilizará para almacenar la opción seleccionada por el usuario en el menú principal. Esta variable se usará en un bucle do-while para controlar la ejecución del programa y permitir al usuario elegir diferentes acciones relacionadas con la gestión de vehículos, como registrar, consultar, modificar o eliminar vehículos, hasta que decida salir del programa.
+
+    do {
+        cout << "\n--- SISTEMA DE VEHICULOS ---\n";
+        cout << "1. Registrar vehiculo\n";
+        cout << "2. Consultar por marca y modelo\n";
+        cout << "3. Consultar por rango de precio\n";
+        cout << "4. Consultar por tipo\n";
+        cout << "5. Modificar vehiculo\n";
+        cout << "6. Eliminar / Activar vehiculo\n";
+        cout << "7. Cantidad de vehiculos propios y consignados\n";
+        cout << "8. mostrar base de datos\n";
+        cout << "9. Salir\n";
+        cout << "Opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1: registrarVehiculo(archivo); break;
+            case 2: consultarPorMarcaModelo(archivo); break;
+            case 3: consultarPorRangoPrecio(archivo); break;
+            case 4: consultarPorTipo(archivo); break;
+            case 5: modificarVehiculo(archivo); break;
+            case 6: eliminarActivarVehiculo(archivo); break;
+            case 7: cantidaddevehiculosPoC(archivo); break;
+            case 8: mostrarbasededatos(archivo); break;
+            case 9: cout << "Saliendo...\n"; break;
+            default: cout << "Opcion invalida\n";
+        }
+
+    } while (opcion != 9);
+
+    return 0;
+}

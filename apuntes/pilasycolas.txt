@@ -1,0 +1,492 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Persona {
+    int id;
+    string apellidos;
+    string nombre;
+    char sexo;
+    int edad;
+};
+
+struct Nodo {
+    Persona dato;
+    Nodo *siguiente;
+};
+
+Nodo* crearNodo(const Persona &dato) {
+    Nodo *nuevo_nodo = new Nodo();
+    nuevo_nodo->dato = dato;
+    nuevo_nodo->siguiente = nullptr;
+    return nuevo_nodo;
+}
+
+void push(Nodo *&pila, Nodo *nuevo_nodo) {
+    nuevo_nodo->siguiente = pila;
+    pila = nuevo_nodo;
+}
+
+Nodo* pop(Nodo *&pila) {
+    if (pila == nullptr) {
+        return nullptr;
+    }
+    Nodo *temp = pila;
+    pila = pila->siguiente;
+    temp->siguiente = nullptr;
+    return temp;
+}
+
+void imprimirPila(Nodo *pila) {
+    Nodo *temp = pila; 
+    while (temp != nullptr) {
+        cout << "ID: " << temp->dato.id << ", Apellidos: " << temp->dato.apellidos
+             << ", Nombre: " << temp->dato.nombre << ", Sexo: " << temp->dato.sexo
+             << ", Edad: " << temp->dato.edad << endl;
+        temp = temp->siguiente;
+    }
+}
+
+int contarPila(Nodo *pila) {
+    int contador = 0;
+    Nodo *temp = pila;
+    while (temp != nullptr) {
+        contador++;
+        temp = temp->siguiente;
+    }
+    return contador;
+}
+
+bool eliminarPorPosicion(Nodo *&pila, int posicion) {
+    int tamaño = contarPila(pila);
+    
+    if (posicion < 1 || posicion > tamaño) {
+        cout << "Posicion invalida. La pila tiene " << tamaño << " nodo(s)." << endl;
+        return false;
+    }
+    
+    if (posicion == 1) {
+        Nodo *nodo = pop(pila);
+        if (nodo != nullptr) {
+            cout << "Nodo eliminado en posicion 1: " << nodo->dato.nombre << endl;
+            delete nodo;
+            return true;
+        }
+        return false;
+    }
+    
+    Nodo *pilaAuxiliar = nullptr;
+    
+    for (int i = 1; i < posicion; i++) {
+        Nodo *nodo = pop(pila);
+        if (nodo != nullptr) {
+            push(pilaAuxiliar, nodo);
+        }
+    }
+    
+    Nodo *nodoAEliminar = pop(pila);
+    if (nodoAEliminar != nullptr) {
+        cout << "Nodo eliminado en posicion " << posicion << ": " 
+             << nodoAEliminar->dato.nombre << endl;
+        delete nodoAEliminar;
+    }
+    
+    while (pilaAuxiliar != nullptr) {
+        Nodo *nodo = pop(pilaAuxiliar);
+        if (nodo != nullptr) {
+            push(pila, nodo);
+        }
+    }
+    
+    return true;
+}
+
+bool insertarPorPosicion(Nodo *&pila, const Persona &dato, int posicion) {
+    int tamaño = contarPila(pila);
+    
+    if (posicion < 1 || posicion > tamaño + 1) {
+        cout << "Posicion invalida. Rango valido: 1 a " << (tamaño + 1) << endl;
+        return false;
+    }
+    
+    if (posicion == 1) {
+        Nodo *nuevo_nodo = crearNodo(dato);
+        push(pila, nuevo_nodo);
+        cout << "Nodo insertado en posicion 1." << endl;
+        return true;
+    }
+    
+    Nodo *pilaAuxiliar = nullptr;
+    
+    for (int i = 1; i < posicion; i++) {
+        Nodo *nodo = pop(pila);
+        if (nodo != nullptr) {
+            push(pilaAuxiliar, nodo);
+        }
+    }
+    
+    Nodo *nuevo_nodo = crearNodo(dato);
+    push(pila, nuevo_nodo);
+    
+    while (pilaAuxiliar != nullptr) {
+        Nodo *nodo = pop(pilaAuxiliar);
+        if (nodo != nullptr) {
+            push(pila, nodo);
+        }
+    }
+    
+    cout << "Nodo insertado en posicion " << posicion << "." << endl;
+    return true;
+}
+
+int main() {
+    Nodo *pila = nullptr;
+    int opcion;
+    do {
+        cout << "\nMenu Pila:" << endl;
+        cout << "1. Agregar nodo" << endl;
+        cout << "2. Extraer nodo" << endl;
+        cout << "3. Imprimir contenido" << endl;
+        cout << "4. Contar nodos" << endl;
+        cout << "5. Eliminar nodo por posicion" << endl;
+        cout << "6. Insertar nodo por posicion" << endl;
+        cout << "7. Salir" << endl;
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+        cin.ignore(); 
+
+        switch (opcion) {
+            case 1: {
+                Persona p;
+                cout << "Ingrese ID: ";
+                cin >> p.id;
+                cin.ignore();
+                cout << "Ingrese Apellidos: ";
+                getline(cin, p.apellidos);
+                cout << "Ingrese Nombre: ";
+                getline(cin, p.nombre);
+                cout << "Ingrese Sexo (M/F): ";
+                cin >> p.sexo;
+                cout << "Ingrese Edad: ";
+                cin >> p.edad;
+                Nodo *nuevo_nodo = crearNodo(p);
+                push(pila, nuevo_nodo);
+                break;
+            }
+            case 2: {
+                Nodo *nodo = pop(pila);
+                if (nodo != nullptr) {
+                    Persona p = nodo->dato;
+                    cout << "Extraido: ID: " << p.id << ", " << p.nombre << " " << p.apellidos << endl;
+                    delete nodo;
+                } else {
+                    cout << "Pila vacia" << endl;
+                }
+                break;
+            }
+            case 3:
+                imprimirPila(pila);
+                break;
+            case 4:
+                cout << "Cantidad de nodos: " << contarPila(pila) << endl;
+                break;
+            case 5: {
+                cout << "Ingrese la posicion del nodo a eliminar: ";
+                int posicion;
+                cin >> posicion;
+                cin.ignore();
+                eliminarPorPosicion(pila, posicion);
+                break;
+            }
+            case 6: {
+                Persona p;
+                cout << "Ingrese ID: ";
+                cin >> p.id;
+                cin.ignore();
+                cout << "Ingrese Apellidos: ";
+                getline(cin, p.apellidos);
+                cout << "Ingrese Nombre: ";
+                getline(cin, p.nombre);
+                cout << "Ingrese Sexo (M/F): ";
+                cin >> p.sexo;
+                cout << "Ingrese Edad: ";
+                cin >> p.edad;
+                cin.ignore();
+                cout << "Ingrese la posicion donde insertar: ";
+                int posicion;
+                cin >> posicion;
+                cin.ignore();
+                insertarPorPosicion(pila, p, posicion);
+                break;
+            }
+            case 7:
+                break;
+            default:
+                cout << "Opcion invalida" << endl;
+        }
+    } while (opcion != 7);
+
+    while (pila != nullptr) {
+        Nodo *nodo = pop(pila);
+        if (nodo != nullptr) {
+            delete nodo;
+        }
+    }
+
+    return 0;
+}
+//////////////////////////////////////////////////////////////////////////////
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Persona {
+    int id;
+    string apellidos;
+    string nombre;
+    char sexo;
+    int edad;
+};
+
+struct Nodo {
+    Persona dato;
+    Nodo *siguiente;
+};
+
+struct Cola {
+    Nodo *frente;
+    Nodo *final;
+    Cola() : frente(nullptr), final(nullptr) {}
+};
+
+Nodo* crearNodo(const Persona &dato) {
+    Nodo *nuevo_nodo = new Nodo();
+    nuevo_nodo->dato = dato;
+    nuevo_nodo->siguiente = nullptr;
+    return nuevo_nodo;
+}
+
+void encolar(Cola &cola, Nodo *nuevo_nodo) {
+    if (cola.final == nullptr) {
+        cola.frente = nuevo_nodo;
+        cola.final = nuevo_nodo;
+    } else {
+        cola.final->siguiente = nuevo_nodo;
+        cola.final = nuevo_nodo;
+    }
+}
+
+Nodo* desencolar(Cola &cola) {
+    if (cola.frente == nullptr) {
+        return nullptr;
+    }
+    Nodo *temp = cola.frente;
+    cola.frente = cola.frente->siguiente;
+    if (cola.frente == nullptr) {
+        cola.final = nullptr;
+    }
+    temp->siguiente = nullptr;
+    return temp;
+}
+
+void imprimirCola(Cola cola) {
+    Nodo *temp = cola.frente;
+    while (temp != NULL) {
+        cout << "ID: " << temp->dato.id << ", Apellidos: " << temp->dato.apellidos
+             << ", Nombre: " << temp->dato.nombre << ", Sexo: " << temp->dato.sexo
+             << ", Edad: " << temp->dato.edad << endl;
+        temp = temp->siguiente;
+    }
+}
+
+int contarCola(Cola cola) {
+    int contador = 0;
+    Nodo *temp = cola.frente;
+    while (temp != NULL) {
+        contador++;
+        temp = temp->siguiente;
+    }
+    return contador;
+}
+
+bool eliminarPorPosicion(Cola &cola, int posicion) {
+    int tamaño = contarCola(cola);
+    
+    if (posicion < 1 || posicion > tamaño) {
+        cout << "Posicion invalida, La cola tiene " << tamaño << " nodo(s)." << endl;
+        return false;
+    }
+    
+    Cola colaAuxiliar;
+    
+    for (int i = 1; i < posicion; i++) {
+        Nodo *nodo = desencolar(cola);
+        if (nodo != nullptr) {
+            encolar(colaAuxiliar, nodo);
+        }
+    }
+    
+    Nodo *nodoAEliminar = desencolar(cola);
+    if (nodoAEliminar != nullptr) {
+        cout << "Nodo eliminado en posicion " << posicion << ": " 
+             << nodoAEliminar->dato.nombre << endl;
+        delete nodoAEliminar;
+    }
+    
+    while (cola.frente != nullptr) {
+        Nodo *nodo = desencolar(cola);
+        if (nodo != nullptr) {
+            encolar(colaAuxiliar, nodo);
+        }
+    }
+    
+    cola = colaAuxiliar;
+    while (colaAuxiliar.frente != nullptr) {
+        Nodo *nodo = desencolar(colaAuxiliar);
+        if (nodo != nullptr) {
+        delete nodo;
+    }
+}
+
+    
+    return true;
+}
+
+bool insertarPorPosicion(Cola &cola, const Persona &dato, int posicion) {
+    int tamaño = contarCola(cola);
+    
+    if (posicion < 1 || posicion > tamaño + 1) {
+        cout << "Posicion invalida. Rango valido: 1 a " << (tamaño + 1) << endl;
+        return false;
+    }
+    
+    Cola colaAuxiliar;
+    
+    for (int i = 1; i < posicion; i++) {
+        Nodo *nodo = desencolar(cola);
+        if (nodo != nullptr) {
+            encolar(colaAuxiliar, nodo);
+        }
+    }
+    
+    Nodo *nuevo_nodo = crearNodo(dato);
+    encolar(colaAuxiliar, nuevo_nodo);
+    
+    while (cola.frente != nullptr) {
+        Nodo *nodo = desencolar(cola);
+        if (nodo != nullptr) {
+            encolar(colaAuxiliar, nodo);
+        }
+    }
+    
+    cola = colaAuxiliar;
+   
+    while (colaAuxiliar.frente != nullptr) {
+        Nodo *nodo = desencolar(colaAuxiliar);
+        if (nodo != nullptr) {
+        delete nodo;
+    }
+}
+
+    
+    cout << "Nodo insertado en posicion " << posicion << "." << endl;
+    return true;
+}
+
+int main() {
+    Cola cola;
+    int opcion;
+    do {
+        cout << "\nMenu Cola:" << endl;
+        cout << "1. Agregar nodo" << endl;
+        cout << "2. Extraer nodo" << endl;
+        cout << "3. Imprimir contenido" << endl;
+        cout << "4. Contar nodos" << endl;
+        cout << "5. Eliminar nodo por posicion" << endl;
+        cout << "6. Insertar nodo por posicion" << endl;
+        cout << "7. Salir" << endl;
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+        cin.ignore(); 
+
+        switch (opcion) {
+            case 1: {
+                Persona p;
+                cout << "Ingrese ID: ";
+                cin >> p.id;
+                cin.ignore();
+                cout << "Ingrese Apellidos: ";
+                getline(cin, p.apellidos);
+                cout << "Ingrese Nombre: ";
+                getline(cin, p.nombre);
+                cout << "Ingrese Sexo (M/F): ";
+                cin >> p.sexo;
+                cout << "Ingrese Edad: ";
+                cin >> p.edad;
+                Nodo *nuevo_nodo = crearNodo(p);
+                encolar(cola, nuevo_nodo);
+                break;
+            }
+            case 2: {
+                Nodo *nodo = desencolar(cola);
+                if (nodo != nullptr) {
+                    Persona p = nodo->dato;
+                    cout << "Extraido: ID: " << p.id << ", " << p.nombre << " " << p.apellidos << endl;
+                    delete nodo;
+                } else {
+                    cout << "Cola vacia" << endl;
+                }
+                break;
+            }
+            case 3:
+                imprimirCola(cola);
+                break;
+            case 4:
+                cout << "Cantidad de nodos: " << contarCola(cola) << endl;
+                break;
+            case 5: {
+                cout << "Ingrese la posicion del nodo a eliminar: ";
+                int posicion;
+                cin >> posicion;
+                cin.ignore();
+                eliminarPorPosicion(cola, posicion);
+                break;
+            }
+            case 6: {
+                Persona p;
+                cout << "Ingrese ID: ";
+                cin >> p.id;
+                cin.ignore();
+                cout << "Ingrese Apellidos: ";
+                getline(cin, p.apellidos);
+                cout << "Ingrese Nombre: ";
+                getline(cin, p.nombre);
+                cout << "Ingrese Sexo (M/F): ";
+                cin >> p.sexo;
+                cout << "Ingrese Edad: ";
+                cin >> p.edad;
+                cin.ignore();
+                cout << "Ingrese la posicion donde insertar: ";
+                int posicion;
+                cin >> posicion;
+                cin.ignore();
+                insertarPorPosicion(cola, p, posicion);
+                break;
+            }
+            case 7:
+                break;
+            default:
+                cout << "Opcion invalida" << endl;
+        }
+    } while (opcion != 7);
+
+    // Liberar memoria restante si es necesario
+    while (cola.frente != nullptr) {
+        Nodo *nodo = desencolar(cola);
+        if (nodo != nullptr) {
+            delete nodo;
+        }
+    }
+
+    return 0;
+}

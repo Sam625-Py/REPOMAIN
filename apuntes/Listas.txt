@@ -1,1 +1,1178 @@
-nodos
+#include <iostream>
+#include <conio.h>
+using namespace std;
+
+struct Rasgo {//esta estructura representa un rasgo de una persona, con un valor y punteros para formar una lista doblemente enlazada de rasgos.
+    string valor;
+    Rasgo *next;
+    Rasgo *prior;
+};
+
+struct nodo {//esta estructura representa una persona, con un id, nombre, punteros a la cabeza y cola de su lista de rasgos, y punteros para formar una lista doblemente enlazada de personas.
+    int id;
+    string nombre;
+    Rasgo *rasgosHead;
+    Rasgo *rasgosTail;
+    nodo *next;
+    nodo *prior;
+};
+
+void liberarRasgos(nodo *persona) {//esta función libera la memoria de los rasgos asociados a una persona, eliminando cada nodo de rasgo y estableciendo los punteros de cabeza y cola a NULL.  
+    Rasgo *cur = persona->rasgosHead;
+    while (cur != NULL) {
+        Rasgo *next = cur->next;
+        delete cur;
+        cur = next;
+    }
+    persona->rasgosHead = persona->rasgosTail = NULL;
+}
+
+void agregarRasgoALista(nodo *persona, const string &rasgo) {//esta función agrega un nuevo rasgo a la lista de rasgos de una persona. Crea un nuevo nodo de rasgo, lo inicializa con el valor proporcionado, y lo agrega al final de la lista de rasgos de la persona, actualizando los punteros de cabeza y cola según sea necesario.
+    Rasgo *nuevo = new Rasgo;
+    nuevo->valor = rasgo;
+    nuevo->next = NULL;
+    nuevo->prior = NULL;
+
+    if (persona->rasgosHead == NULL) {
+        persona->rasgosHead = persona->rasgosTail = nuevo;
+    } else {
+        persona->rasgosTail->next = nuevo;
+        nuevo->prior = persona->rasgosTail;
+        persona->rasgosTail = nuevo;
+    }
+}
+
+void ingresarRasgosParaPersona(nodo *persona) {//esta función permite al usuario ingresar rasgos para una persona específica. Solicita al usuario que ingrese rasgos uno por uno, agregándolos a la lista de rasgos de la persona utilizando la función agregarRasgoALista. El proceso continúa hasta que el usuario decida no agregar más rasgos.
+    char seguir = 'n';
+
+    do {
+        string rasgo;
+        cout << "Ingrese un rasgo (o deje vacio y presione Enter para terminar): ";
+        getline(cin, rasgo);
+        if (rasgo.empty()) {
+            break;
+        }
+        agregarRasgoALista(persona, rasgo);
+
+        cout << "Desea agregar otro rasgo? (s/n): ";
+        cin >> seguir;
+        cin.ignore();
+    } while (seguir == 's' || seguir == 'S');
+}
+
+
+//AGREGAR PERSONA ORDENADA 
+void agregarpersonaordenada(nodo *&primero) {//esta función agrega una nueva persona a la lista de personas de manera ordenada por ID. Solicita al usuario que ingrese el ID y el nombre de la persona, y luego inserta el nuevo nodo en la posición correcta dentro de la lista para mantener el orden descendente por ID. Además, permite al usuario ingresar rasgos para la persona recién agregada.
+    nodo *nuevo = new nodo;
+
+    cout << "Ingrese su id: ";
+    cin >> nuevo->id;
+    cin.ignore();
+
+    cout << "Ingrese su nombre: ";
+    getline(cin, nuevo->nombre);
+
+    nuevo->prior = NULL; 
+    nuevo->next = NULL;
+    nuevo->rasgosHead = NULL;
+    nuevo->rasgosTail = NULL;
+
+    cout << "\n-- Opcional: agregar rasgos para esta persona --\n";
+    ingresarRasgosParaPersona(nuevo);
+
+    if (primero == NULL || nuevo->id > primero->id) {
+        nuevo->next = primero;
+        if (primero != NULL) {
+            primero->prior = nuevo;
+        }
+        primero = nuevo;
+    }
+    else {
+
+        nodo *temp = primero;
+         while (temp->next != NULL && temp->next->id > nuevo->id) {
+            temp = temp->next;
+        }
+        nuevo->next = temp->next;
+        temp->next = nuevo;
+        if (nuevo->next != NULL) {
+            nuevo->next->prior = nuevo;
+        }
+         nuevo->prior = temp;
+    }
+}
+//INSERTAR EN POSICIÓN 
+void insertarnodoenposicionindicada(nodo *&primero) {//esta función inserta un nuevo nodo de persona en una posición específica dentro de la lista. Solicita al usuario que ingrese el ID, el nombre y la posición donde desea insertar el nuevo nodo. Luego, inserta el nodo en la posición indicada, ajustando los punteros de los nodos adyacentes para mantener la integridad de la lista. Además, permite al usuario ingresar rasgos para la persona recién agregada.
+    nodo *nuevo = new nodo;
+
+    cout << "Ingrese su id: ";
+    cin >> nuevo->id;
+    cin.ignore();
+    cout << "Ingrese su nombre: ";
+    getline(cin, nuevo->nombre);
+
+    nuevo->next = NULL;
+    nuevo->prior = NULL;
+    nuevo->rasgosHead = NULL;
+    nuevo->rasgosTail = NULL;
+
+    cout << "\n-- Opcional: agregar rasgos para esta persona --\n";
+    ingresarRasgosParaPersona(nuevo);
+
+    int pos;
+    cout << "Ingrese la posicion a insertar el nodo: ";
+    cin >> pos;
+
+    if (primero == NULL || pos == 1) {
+        nuevo->next = primero;
+        if (primero != NULL) {
+            primero->prior = nuevo;
+        }
+        primero = nuevo;
+    }
+    else {
+        nodo *temp = primero;
+        int i = 1;
+        while (i < pos - 1 && temp->next != NULL) {
+            temp = temp->next;
+            i++;
+        }
+
+        nuevo->next = temp->next;
+        nuevo->prior = temp;
+        temp->next = nuevo;
+        if (nuevo->next != NULL) {
+            nuevo->next->prior = nuevo;
+        }
+    }
+}
+
+//ELIMINAR POR ID 
+void eliminarnodopersonaindicada(nodo *&primero) {//esta función elimina un nodo de persona de la lista utilizando su ID. Solicita al usuario que ingrese el ID del nodo a eliminar, busca el nodo correspondiente en la lista, y luego lo elimina ajustando los punteros de los nodos adyacentes para mantener la integridad de la lista.
+    int id;
+    cout << "Ingrese el id a eliminar: ";
+    cin >> id;
+
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    nodo *temp = primero;
+
+    if (temp->id == id) {
+        primero = temp->next;
+        if (primero != NULL) {
+            primero->prior = NULL;
+        }
+        delete temp;
+        cout << "Nodo eliminado\n";
+    }
+    else {
+        while (temp->next != NULL && temp->next->id != id) {
+            temp = temp->next;
+        }
+
+        if (temp->next == NULL) {
+            cout << "El id no existe\n";
+        }
+        else {
+            nodo *temp2 = temp->next;
+            temp->next = temp2->next;
+            if (temp2->next != NULL) {
+                temp2->next->prior = temp;
+            }
+            delete temp2;
+            cout << "Nodo eliminado\n";
+        }
+    }
+}
+
+//ELIMINAR POR POSICIÓN
+void eliminarnodoposicionindicada(nodo *&primero) {//esta función elimina un nodo de persona de la lista utilizando su posición. Solicita al usuario que ingrese la posición del nodo a eliminar, busca el nodo correspondiente en la lista, y luego lo elimina ajustando los punteros de los nodos adyacentes para mantener la integridad de la lista.
+    int pos;
+    cout << "Ingrese la posicion a eliminar el nodo: ";
+    cin >> pos;
+
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    nodo *temp = primero;
+
+    if (pos == 1) {
+        primero = temp->next;
+        if (primero != NULL) {
+            primero->prior = NULL;
+        }
+        delete temp;
+        cout << "Nodo eliminado\n";
+    }
+    else {
+        int i = 1;
+        while (i < pos - 1 && temp->next != NULL) {
+            temp = temp->next;
+            i++;
+        }
+
+        if (temp->next == NULL) {
+            cout << "La posicion no existe\n";
+        }
+        else {
+            nodo *temp2 = temp->next;
+            temp->next = temp2->next;
+            if (temp2->next != NULL) {
+                temp2->next->prior = temp;
+            }
+            delete temp2;
+            cout << "Nodo eliminado\n";
+        }
+    }
+}
+
+//INTERCAMBIAR CONTENIDO E INVERTIR LISTA
+void intercambiarContenidoPorID(nodo *&primero) {// punto 1 /// esta función permite al usuario intercambiar el contenido de dos nodos en la lista de personas utilizando sus IDs. Solicita al usuario que ingrese los IDs de los dos nodos a intercambiar, busca los nodos correspondientes en la lista, y luego intercambia sus campos (ID, nombre y lista de rasgos) sin modificar la estructura de la lista. Además, ofrece la opción de invertir toda la lista, lo que cambia el orden de los nodos sin alterar su contenido.
+    int opcion;
+    cout << "\nQue desea hacer?\n";
+    cout << "1. Intercambiar contenido de dos nodos por ID\n";
+    cout << "2. Invertir lista\n";
+    cout << "Seleccione una opcion: ";
+    cin >> opcion;
+
+    if (opcion == 1) {
+        // Intercambiar contenido
+        int id1, id2;
+        cout << "Ingrese el primer ID: ";
+        cin >> id1;
+        cout << "Ingrese el segundo ID: ";
+        cin >> id2;
+
+        nodo *nodo1 = NULL;
+        nodo *nodo2 = NULL;
+        nodo *temp = primero;
+
+        while (temp != NULL) {
+            if (temp->id == id1)
+                nodo1 = temp;
+            if (temp->id == id2)
+                nodo2 = temp;
+            temp = temp->next;
+        }
+
+        if (nodo1 == NULL || nodo2 == NULL) {
+            cout << "Uno o ambos IDs no existen\n";
+            return;
+        }
+
+        swap(nodo1->id, nodo2->id);
+        swap(nodo1->nombre, nodo2->nombre);
+        swap(nodo1->rasgosHead, nodo2->rasgosHead);
+        swap(nodo1->rasgosTail, nodo2->rasgosTail);
+
+        cout << "Contenido intercambiado correctamente\n";
+    }
+    else if (opcion == 2) {
+        // Invertir lista
+        nodo *prev = NULL;
+        nodo *curr = primero;
+        nodo *next = NULL;
+        while (curr != NULL) {
+            next = curr->next;
+            curr->next = prev;
+            curr->prior = next;
+            prev = curr;
+            curr = next;
+        }
+        primero = prev;
+        if (primero) primero->prior = NULL;
+        cout << "Lista invertida correctamente\n";
+    }
+    else {
+        cout << "Opcion invalida\n";
+    }
+}
+
+//AGREGAR RASGOS A PERSONA EXISTENTE
+void agregarRasgosPersona(nodo *primero) {//esta función permite al usuario agregar rasgos a una persona existente en la lista de personas. Solicita al usuario que ingrese el ID de la persona a la que desea agregar rasgos, busca el nodo correspondiente en la lista, y luego permite al usuario ingresar nuevos rasgos para esa persona utilizando la función ingresarRasgosParaPersona. Los nuevos rasgos se agregan al final de la lista de rasgos de la persona.
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+    int id;
+    cout << "Ingrese el ID de la persona: ";
+    cin >> id;
+    cin.ignore();
+
+    nodo *temp = primero;
+    while (temp != NULL && temp->id != id)
+        temp = temp->next;
+
+    if (temp == NULL) {
+        cout << "Persona no encontrada\n";
+        return;
+    }
+
+    cout << "\n Agregar rasgos \n";
+    ingresarRasgosParaPersona(temp);
+    cout << "Rasgos agregados correctamente\n";
+}
+
+//CONSULTAR RASGOS CON FLECHAS
+void mostrarRasgosDePersona(nodo *primero) {//esta función permite al usuario consultar los rasgos de una persona específica utilizando las flechas del teclado para navegar entre los rasgos. Solicita al usuario que ingrese el ID de la persona a consultar, busca el nodo correspondiente en la lista, y luego muestra los rasgos de esa persona uno por uno. El usuario puede usar las flechas arriba y abajo para moverse entre los rasgos, y la tecla Escape para salir de la consulta.
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    int id;
+    cout << "Ingrese el ID de la persona a consultar: ";
+    cin >> id;
+
+    nodo *temp = primero;
+    while (temp != NULL && temp->id != id) {
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        cout << "Persona no encontrada\n";
+        return;
+    }
+
+    if (temp->rasgosHead == NULL) {
+        cout << "La persona no tiene rasgos registrados\n";
+        return;
+    }
+
+    Rasgo *current = temp->rasgosHead;
+    while (true) {
+        system("cls");
+        cout << "Codigo: " << temp->id << "\n";
+        cout << "Nombre: " << temp->nombre << "\n";
+        cout << "Rasgo actual: " << current->valor << "\n";
+        cout << "Flecha arriba: rasgo anterior, Flecha abajo: siguiente rasgo, Escape: salir\n";
+
+        int ch = getch();
+        if (ch == 224) {
+            ch = getch();
+            if (ch == 72 && current->prior != NULL) {
+                current = current->prior;
+            } else if (ch == 80 && current->next != NULL) {
+                current = current->next;
+            }
+        } else if (ch == 27) {
+            break;
+        }
+    }
+}
+
+//IMPRIMIR
+void imprimir(nodo *primero) {//punto 2   //esta función imprime el contenido de la lista de personas, mostrando el ID, nombre y rasgos de cada persona. Recorre la lista de personas y para cada persona, recorre su lista de rasgos para mostrar todos los rasgos asociados. Si la lista está vacía, muestra un mensaje indicando que no hay personas registradas.
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    int opcion;
+    cout << "\nMostrar lista:\n";
+    cout << "1. Primero -> Ultimo\n";
+    cout << "2. Ultimo -> Primero\n";
+    cout << "Seleccione una opcion: ";
+    cin >> opcion;
+    cin.ignore();
+
+    if (opcion == 1) {
+        nodo *temp = primero;
+        cout << "\nContenido de la lista...\n";
+        while (temp != NULL) {
+            cout << "Codigo: " << temp->id << endl;
+            cout << "Nombre: " << temp->nombre << endl;
+            if (temp->rasgosHead != NULL) {
+                cout << "Rasgos: ";
+                Rasgo *r = temp->rasgosHead;
+                while (r != NULL) {
+                    cout << r->valor << " ";
+                    r = r->next;
+                }
+                cout << endl;
+            }
+            temp = temp->next;
+        }
+    } else if (opcion == 2) {
+        nodo *temp = primero;
+        // Ir al último nodo
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+
+        cout << "\nContenido de la lista (inverso)...\n";
+        while (temp != NULL) {
+            cout << "Codigo: " << temp->id << endl;
+            cout << "Nombre: " << temp->nombre << endl;
+            if (temp->rasgosHead != NULL) {
+                cout << "Rasgos: ";
+                Rasgo *r = temp->rasgosHead;
+                while (r != NULL) {
+                    cout << r->valor << " ";
+                    r = r->next;
+                }
+                cout << endl;
+            }
+            temp = temp->prior;
+        }
+    } else {
+        cout << "Opcion invalida\n";
+    }
+}
+
+//MOSTRAR CON FLECHAS
+void mostrarConFlechas(nodo *primero) {//punto 3. //esta función muestra el contenido de la lista de personas utilizando las flechas del teclado para navegar entre los nodos. Muestra el ID, nombre y rasgos de la persona actual, y permite al usuario usar las flechas arriba y abajo para moverse entre los nodos de la lista. La tecla Escape se utiliza para salir de la visualización. Si la lista está vacía, muestra un mensaje indicando que no hay personas registradas.
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+    nodo *current = primero;
+    while (true) {
+        system("cls");
+        cout << "Codigo: " << current->id << endl;
+        cout << "Nombre: " << current->nombre << endl;
+        if (current->rasgosHead != NULL) {
+            cout << "Rasgos: ";
+            Rasgo *r = current->rasgosHead;
+            while (r != NULL) {
+                cout << r->valor << " ";
+                r = r->next;
+            }
+            cout << endl;
+        }
+        cout << "Flecha arriba: nodo anterior, Flecha abajo: nodo siguiente, Escape: salir al menu\n";
+
+        int ch = getch();
+        if (ch == 224) { // Flecha especial
+            ch = getch();
+            if (ch == 72 && current->prior != NULL) { // Arriba
+                current = current->prior;
+            } else if (ch == 80 && current->next != NULL) { // Abajo
+                current = current->next;
+            }
+        } else if (ch == 27) { // Escape
+            break;
+        }
+    }
+}
+
+void menu(nodo *&primero) {
+    int opcion;
+
+    do {
+        cout << "\n===== MENU =====\n";
+        cout << "1. Agregar nodo ordenado\n";
+        cout << "2. Insertar nodo en posicion indicada\n";
+        cout << "3. Eliminar nodo por ID\n";
+        cout << "4. Eliminar nodo por posicion\n";
+        cout << "5. Mostrar lista\n";
+        cout << "6. Intercambiar contenido / Invertir lista\n";
+        cout << "7. Agregar rasgos a persona existente\n";
+        cout << "8. Mostrar lista con flechas\n";
+        cout << "9. Consultar rasgos de una persona con flechas\n";
+        cout << "10. Salir\n";
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+
+        switch(opcion) {
+            case 1: agregarpersonaordenada(primero); break;
+            case 2: insertarnodoenposicionindicada(primero); break;
+            case 3: eliminarnodopersonaindicada(primero); break;
+            case 4: eliminarnodoposicionindicada(primero); break;
+            case 5: imprimir(primero); break;
+            case 6: intercambiarContenidoPorID(primero); break;
+            case 7: agregarRasgosPersona(primero); break;
+            case 8: mostrarConFlechas(primero); break;
+            case 9: mostrarRasgosDePersona(primero); break;
+            case 10: cout << "Saliendo del programa...\n"; break;
+            default: cout << "Opcion invalida\n";
+        }
+
+    } while(opcion != 10);
+}
+int main() {
+    nodo *primero = NULL;
+    menu(primero);
+    cin.get();
+    return 0;
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include <string>
+#include <iostream>
+#include <conio.h>
+#include <limits>
+using namespace std;
+
+struct programacion{
+    int franjaHoraria;
+    string nombre;
+    string clasificacion;
+    programacion *next;
+    programacion *prior;
+};
+
+struct nodo {
+    int id;
+    string canal;
+    programacion *programacionesHead;
+    programacion *programacionesTail;
+    nodo *next;
+    nodo *prior;
+};
+
+void liberarProgramaciones(nodo *canal) {
+    programacion *cur = canal->programacionesHead;
+    while (cur != NULL) {
+        programacion *next = cur->next;
+        delete cur;
+        cur = next;
+    }
+    canal->programacionesHead = canal->programacionesTail = NULL;
+}
+
+void agregarProgramacionALista(nodo *canal, int franja, const string &nom, const string &clas) {
+    programacion *temp = canal->programacionesHead;
+    while (temp != NULL) {
+        if (temp->franjaHoraria == franja) {
+            cout << "Franja ocupada\n";
+            return;
+        }
+        temp = temp->next;
+    }
+
+    programacion *nuevo = new programacion{franja, nom, clas};
+    nuevo->next = nuevo->prior = NULL;
+
+    if (canal->programacionesHead == NULL) {
+        canal->programacionesHead = canal->programacionesTail = nuevo;
+    } else if (franja < canal->programacionesHead->franjaHoraria) {
+        nuevo->next = canal->programacionesHead;
+        canal->programacionesHead->prior = nuevo;
+        canal->programacionesHead = nuevo;
+    } else {
+        temp = canal->programacionesHead;
+        while (temp->next != NULL && temp->next->franjaHoraria < franja) {
+            temp = temp->next;
+        }
+        nuevo->next = temp->next;
+        nuevo->prior = temp;
+        if (temp->next != NULL) {
+            temp->next->prior = nuevo;
+        } else {
+            canal->programacionesTail = nuevo;
+        }
+        temp->next = nuevo;
+    }
+}
+
+void ingresarProgramacionesParaCanal(nodo *canal) {
+    char seguir = 'n';
+
+    do {
+        int franja;
+        string nom, clas;
+        cout << "Franja horaria (0-23): ";
+        cin >> franja;
+        if (cin.fail() || franja < 0 || franja > 23) {
+            cout << "Franja invalida\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            continue;
+        }
+        cin.ignore();
+        cout << "Nombre del programa: ";
+        getline(cin, nom);
+        cout << "Clasificacion: ";
+        getline(cin, clas);
+
+        agregarProgramacionALista(canal, franja, nom, clas);
+
+        cout << "Desea agregar otra programacion? (s/n): ";
+        cin >> seguir;
+        cin.ignore();
+    } while (seguir == 's' || seguir == 'S');
+}
+
+void agregarCanalordenado(nodo *&primero) {
+    nodo *nuevo = new nodo;
+
+    cout << "Ingrese el numero del canal: ";
+    cin >> nuevo->id;
+    if(cin.fail()) {
+        cout << "Entrada invalida. El numero del canal debe ser un entero.\n";
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        delete nuevo;
+        return;
+    }
+    cin.ignore();
+
+    // Verificar si el canal ya existe
+    if (primero != NULL) {
+        nodo *temp = primero;
+        do {
+            if (temp->id == nuevo->id) {
+                cout << "Canal ya existe\n";
+                delete nuevo;
+                return;
+            }
+        } while ((temp = temp->next) != primero);
+    }
+
+    cout << "Ingrese el canal: ";
+    getline(cin, nuevo->canal);
+    
+    nuevo->programacionesHead = nuevo->programacionesTail = NULL;
+
+    cout << "\n Opcional: agregar programaciones para este canal \n";
+    ingresarProgramacionesParaCanal(nuevo);
+
+    if (primero == NULL) {
+        nuevo->next = nuevo->prior = nuevo;
+        primero = nuevo;
+        return;
+    }
+    
+    nodo *temp = primero;
+    while (temp->next != primero && temp->next->id > nuevo->id) 
+        temp = temp->next;
+    
+    nuevo->next = temp->next;
+    nuevo->prior = temp;
+    temp->next->prior = nuevo;
+    temp->next = nuevo;
+    
+    if (nuevo->id > primero->id) 
+        primero = nuevo;
+}
+
+nodo* buscarCanal(nodo *primero) {
+    if (primero == NULL) return NULL;
+
+    cout << "Buscar por (1) numero o (2) nombre: ";
+    int opc;
+    cin >> opc;
+    cin.ignore();
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return NULL;
+    }
+
+    nodo *temp = primero;
+    if (opc == 1) {
+        int num;
+        cout << "Numero: ";
+        cin >> num;
+        cin.ignore();
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            return NULL;
+        }
+        do {
+            if (temp->id == num) return temp;
+        } while ((temp = temp->next) != primero);
+    } else if (opc == 2) {
+        string nom;
+        cout << "Nombre: ";
+        getline(cin, nom);
+        do {
+            if (temp->canal == nom) return temp;
+        } while ((temp = temp->next) != primero);
+    }
+    return NULL;
+}
+
+void eliminarnodocanalindicado(nodo *&primero) {
+    nodo *canal = buscarCanal(primero);
+    if (canal == NULL) {
+        cout << "Canal no encontrado\n";
+        return;
+    }
+
+    liberarProgramaciones(canal);
+
+    if (canal->next == canal) {
+        primero = NULL;
+    } else {
+        canal->prior->next = canal->next;
+        canal->next->prior = canal->prior;
+        if (primero == canal) {
+            primero = canal->next;
+        }
+    }
+    delete canal;
+    cout << "Canal eliminado\n";
+}
+
+void eliminarnodoposicionindicada(nodo *&primero) {
+    int pos;
+    cout << "Ingrese la posicion a eliminar el nodo: ";
+    cin >> pos;
+    cin.ignore();
+
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    if (pos < 1) {
+        cout << "La posicion no existe\n";
+        return;
+    }
+
+    nodo *temp = primero;
+    int i = 1;
+    
+    if (pos == 1) {
+        if (temp->next == primero) {
+            primero = NULL;
+        } else {
+            nodo *ultimo = primero->prior;
+            primero = temp->next;
+            primero->prior = ultimo;
+            ultimo->next = primero;
+        }
+        delete temp;
+        cout << "Nodo eliminado\n";
+    }
+    else {
+        while (i < pos - 1 && temp->next != primero) {
+            temp = temp->next;
+            i++;
+        }
+
+        if (temp->next == primero && i < pos - 1) {
+            cout << "La posicion no existe\n";
+        }
+        else {
+            nodo *temp2 = temp->next;
+            temp->next = temp2->next;
+            temp2->next->prior = temp;
+            delete temp2;
+            cout << "Nodo eliminado\n";
+        }
+    }
+}
+
+void agregarProgramacionesACanal(nodo *primero) {
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+    int id;
+    cout << "Ingrese el ID del canal: ";
+    cin >> id;
+    cin.ignore();
+
+    nodo *temp = primero;
+    do {
+        if (temp->id == id) break;
+        temp = temp->next;
+    } while (temp != primero);
+
+    if (temp->id != id) {
+        cout << "Canal no encontrado\n";
+        return;
+    }
+
+    cout << "\n Agregar programaciones \n";
+    ingresarProgramacionesParaCanal(temp);
+    cout << "Programaciones agregadas correctamente\n";
+}
+
+void mostrarProgramacionesDeCanalConflechas(nodo *primero) {
+    nodo *temp = buscarCanal(primero);
+    if (temp == NULL) {
+        cout << "Canal no encontrado\n";
+        return;
+    }
+
+    if (temp->programacionesHead == NULL) {
+        cout << "El canal no tiene programaciones registradas\n";
+        return;
+    }
+
+    programacion *current = temp->programacionesHead;
+    while (true) {
+        system("cls");
+        cout << "numero: " << temp->id << "\n";
+        cout << "canal: " << temp->canal << "\n";
+        cout << "Programacion actual: " << current->franjaHoraria << ":00 - " << current->nombre << " (" << current->clasificacion << ")\n";
+        cout << "Flecha arriba: programacion anterior, Flecha abajo: siguiente programacion, Escape: salir\n";
+
+        int ch = getch();
+        if (ch == 224) {
+            ch = getch();
+            if (ch == 72 && current->prior != NULL) {
+                current = current->prior;
+            } else if (ch == 80 && current->next != NULL) {
+                current = current->next;
+            }
+        } else if (ch == 27) {
+            break;
+        }
+    }
+}
+
+void imprimir(nodo *primero) {
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+
+    int opcion;
+    cout << "\nMostrar lista:\n";
+    cout << "1. Primero -> Ultimo\n";
+    cout << "2. Ultimo -> Primero\n";
+    cout << "Seleccione una opcion: ";
+    cin >> opcion;
+    cin.ignore();
+
+    if (opcion == 1) {
+        nodo *temp = primero;
+        cout << "\nContenido de la lista...\n";
+        do {
+            cout << "Codigo: " << temp->id << endl;
+            cout << "Canal: " << temp->canal << endl;
+            if (temp->programacionesHead != NULL) {
+                cout << "programaciones:\n";
+                programacion *p = temp->programacionesHead;
+                while (p != NULL) {
+                    cout << "  " << p->franjaHoraria << ":00 - " << p->nombre << " (" << p->clasificacion << ")\n";
+                    p = p->next;
+                }
+            }
+            temp = temp->next;
+        } while (temp != primero);
+    } else if (opcion == 2) {
+        nodo *temp = primero->prior;
+
+        cout << "\nContenido de la lista (inverso)...\n";
+        do {
+            cout << "numero: " << temp->id << endl;
+            cout << "canal: " << temp->canal << endl;
+            if (temp->programacionesHead != NULL) {
+                cout << "programaciones:\n";
+                programacion *p = temp->programacionesHead;
+                while (p != NULL) {
+                    cout << "  " << p->franjaHoraria << ":00 - " << p->nombre << " (" << p->clasificacion << ")\n";
+                    p = p->next;
+                }
+            }
+            temp = temp->prior;
+        } while (temp != primero->prior);
+    } else {
+        cout << "Opcion invalida\n";
+    }
+}
+
+void mostrarConFlechas(nodo *primero) {
+    if (primero == NULL) {
+        cout << "La lista esta vacia\n";
+        return;
+    }
+    nodo *canalActual = primero;
+    programacion *progActual = NULL;
+
+    while (true) {
+        system("cls");
+        cout << "CANAL: " << canalActual->id << " - " << canalActual->canal << endl;
+        if (progActual == NULL) {
+            cout << "PROGRAMA: Ninguno seleccionado\n";
+        } else {
+            cout << "PROGRAMA: " << progActual->franjaHoraria << ":00 - " << progActual->nombre << " (" << progActual->clasificacion << ")\n";
+        }
+        cout << "Flechas: Izq/Der para programas, Arriba/Abajo para canales, Escape para salir\n";
+
+        int ch = getch();
+        if (ch == 224) {
+            ch = getch();
+            if (ch == 75 && progActual != NULL && progActual->prior != NULL) { // Izq
+                progActual = progActual->prior;
+            } else if (ch == 77 && progActual != NULL && progActual->next != NULL) { // Der
+                progActual = progActual->next;
+            } else if (ch == 72 && canalActual->prior != primero) { // Arriba
+                canalActual = canalActual->prior;
+                progActual = canalActual->programacionesHead;
+            } else if (ch == 80 && canalActual->next != primero) { // Abajo
+                canalActual = canalActual->next;
+                progActual = canalActual->programacionesHead;
+            }
+        } else if (ch == 27) { // Escape
+            break;
+        } else if (progActual == NULL && canalActual->programacionesHead != NULL) {
+            progActual = canalActual->programacionesHead;
+        }
+    }
+}
+
+void eliminarProgramacionCanal(nodo *primero) {
+    nodo *canal = buscarCanal(primero);
+    if (canal == NULL) {
+        cout << "Canal no encontrado\n";
+        return;
+    }
+
+    liberarProgramaciones(canal);
+    cout << "Programacion eliminada\n";
+}
+
+void menu(nodo *&primero) {
+    int opcion = 0;
+
+    do {
+        cout << "\n===== MENU =====\n";
+        cout << "1. Agregar canal ordenado\n";
+        cout << "2. Agregar programaciones a canal existente\n";
+        cout << "3. Consultar informacion de un canal\n";
+        cout << "4. Eliminar canal\n";
+        cout << "5. Eliminar programacion de un canal\n";
+        cout << "6. Mostrar guia completa\n";
+        cout << "7. Mostrar guia con flechas\n";
+        cout << "8. Consultar programaciones de un canal con flechas\n";
+        cout << "9. Salir\n";
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Entrada invalida, intente de nuevo\n";
+            continue;
+        }
+        cin.ignore();
+
+        switch (opcion) {
+            case 1: agregarCanalordenado(primero); break;
+            case 2: {
+                nodo *c = buscarCanal(primero);
+                if (c != NULL) ingresarProgramacionesParaCanal(c);
+                break;
+            }
+            case 3: {
+                nodo *c = buscarCanal(primero);
+                if (c != NULL) {
+                    cout << "Numero: " << c->id << endl;
+                    cout << "Nombre: " << c->canal << endl;
+                    if (c->programacionesHead != NULL) {
+                        cout << "Programacion:\n";
+                        programacion *p = c->programacionesHead;
+                        while (p != NULL) {
+                            cout << p->franjaHoraria << ":00 - " << p->nombre << " (" << p->clasificacion << ")\n";
+                            p = p->next;
+                        }
+                    } else {
+                        cout << "Sin programacion\n";
+                    }
+                } else {
+                    cout << "Canal no encontrado\n";
+                }
+                break;
+            }
+            case 4: eliminarnodocanalindicado(primero); break;
+            case 5: eliminarProgramacionCanal(primero); break;
+            case 6: imprimir(primero); break;
+            case 7: mostrarConFlechas(primero); break;
+            case 8: mostrarProgramacionesDeCanalConflechas(primero); break;
+            case 9: cout << "Saliendo del programa...\n"; break;
+            default: cout << "Opcion invalida\n";
+        }
+
+    } while(opcion != 9);
+}
+int main() {
+    nodo *primero = NULL;
+    menu(primero);
+    system("pause");
+    return 0;
+}
+
+
+
+#include<iostream>
+#include<conio.h>
+#include<string>
+#include<limits>
+using namespace std;
+
+struct nodo{
+    string palabra;
+    nodo *next;
+    nodo *prior;
+};
+
+void agregarpalabra(nodo *&primero) {
+    nodo *nuevo = new nodo;
+
+    cout << "Ingrese la palabra: ";
+    getline(cin, nuevo->palabra);
+
+    if (primero == NULL) {
+        nuevo->next = nuevo->prior = nuevo;
+        primero = nuevo;
+        return;
+    }
+    
+    nodo *temp = primero;
+    while (temp->next != primero && temp->next->palabra > nuevo->palabra) 
+        temp = temp->next;
+    
+    nuevo->next = temp->next;
+    nuevo->prior = temp;
+    temp->next->prior = nuevo;
+    temp->next = nuevo;
+    
+    if (nuevo->palabra > primero->palabra) 
+        primero = nuevo;
+}
+
+void imprimir(nodo *original, nodo *impares, nodo *pares) {
+    cout << "\n--- Submenu Imprimir ---\n";
+    cout << "1. Imprimir lista original\n";
+    cout << "2. Imprimir lista impares\n";
+    cout << "3. Imprimir lista pares\n";
+    cout << "Seleccione una opcion: ";
+    int opcion;
+    cin >> opcion;
+    
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Entrada invalida\n";
+        return;
+    }
+    
+    switch(opcion) {
+        case 1: {
+            cout << "Lista original: ";
+            if (original == NULL) {
+                cout << "La lista esta vacia\n";
+            } else {
+                nodo *temp = original;
+                do {
+                    cout << temp->palabra << " ";
+                    temp = temp->next;
+                } while (temp != original);
+                cout << endl;
+            }
+            break;
+        }
+        case 2: {
+            cout << "Lista impares: ";
+            if (impares == NULL) {
+                cout << "La lista esta vacia\n";
+            } else {
+                nodo *temp = impares;
+                do {
+                    cout << temp->palabra << " ";
+                    temp = temp->next;
+                } while (temp != impares);
+                cout << endl;
+            }
+            break;
+        }
+        case 3: {
+            cout << "Lista pares: ";
+            if (pares == NULL) {
+                cout << "La lista esta vacia\n";
+            } else {
+                nodo *temp = pares;
+                do {
+                    cout << temp->palabra << " ";
+                    temp = temp->next;
+                } while (temp != pares);
+                cout << endl;
+            }
+            break;
+        }
+        default: cout << "Opcion invalida\n";
+    }
+}
+
+void separar(nodo *original, nodo *&impares, nodo *&pares) {
+    if (original == NULL) return;
+
+    nodo *temp = original;
+    int pos = 1;
+
+    do {
+        nodo *nuevo = new nodo;
+        nuevo->palabra = temp->palabra;
+
+        if (pos % 2 == 1) {
+            if (impares == NULL) {
+                nuevo->next = nuevo;
+                nuevo->prior = nuevo;
+                impares = nuevo;
+            } else {
+                nodo *u = impares->prior;
+                u->next = nuevo;
+                nuevo->prior = u;
+                nuevo->next = impares;
+                impares->prior = nuevo;
+            }
+        } else {
+            if (pares == NULL) {
+                nuevo->next = nuevo;
+                nuevo->prior = nuevo;
+                pares = nuevo;
+            } else {
+                nodo *u = pares->prior;
+                u->next = nuevo;
+                nuevo->prior = u;
+                nuevo->next = pares;
+                pares->prior = nuevo;
+            }
+        }
+
+        temp = temp->next;
+        pos++;
+    } while (temp != original);
+}
+
+int main(){
+
+     nodo *primero = NULL;
+     nodo *impares = NULL;
+     nodo *pares = NULL;
+
+    int opcion = 0;
+
+    do {
+        cout << "\n===== MENU =====\n";
+        cout << "1. Agregar palabra ordenada\n";
+        cout << "2. Separar lista original en pares e impares\n";
+        cout << "3. Imprimir listas\n";
+        cout << "4. Salir\n";
+        cout << "Seleccione una opcion: ";
+        cin >> opcion;
+        
+        if (cin.fail()) {
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "Entrada invalida, intente de nuevo\n";
+            continue;
+        }
+        cin.ignore();
+
+        switch (opcion) {
+            case 1: agregarpalabra(primero); break;
+            case 2: separar(primero, impares, pares); break;
+            case 3: imprimir(primero, impares, pares); break;
+            case 4: cout << "Saliendo del programa...\n"; break;
+            default: cout << "Opcion invalida\n";
+        }
+
+    } while(opcion != 4);
+
+    system("pause");
+    return 0;
+}
