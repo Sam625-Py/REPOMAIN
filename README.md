@@ -1,2 +1,2 @@
-# DS2025
-pa las estructuras
+# REPOMAIN
+archivos variados
