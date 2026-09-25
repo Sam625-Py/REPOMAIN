@@ -1,3 +1,4 @@
+%EJERCICIO 1
 
 % HECHOS
 
@@ -52,3 +53,34 @@ abuelo(X, Z) :-
 abuela(X, Z) :-
     madre(X, Y),
     progenitor(Y, Z).
+
+
+    ?- abuelo(X, bart).
+
+   
+   
+    %EJERCICIO 2
+
+    % Hechos
+
+estadounidense(west).
+
+hostil(corea_del_sur).
+
+arma(misiles).
+
+vendio(west, misiles, corea_del_sur).
+
+
+% Regla
+
+criminal(X) :-
+    estadounidense(X),
+    vendio(X, Y, Z),
+    arma(Y),
+    hostil(Z).
+
+    
+
+
+?- criminal(west).
