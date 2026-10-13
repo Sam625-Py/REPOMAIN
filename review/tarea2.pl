@@ -1,98 +1,54 @@
 
 % BACKTRACKING Y SLD
-% Grafo dirigido de ciudades
-% HECHOS: conexion(Origen, Destino, Costo)
+% Grafo dirigido de ciudades usando estructuras y listas.
+% Cada ciudad guarda una lista de aristas: arista(Destino, Costo)
 
-
-conexion(vancouver, edmonton, 16).
-conexion(vancouver, calgary, 13).
-
-conexion(calgary, edmonton, 4).
-conexion(calgary, regina, 14).
-
-conexion(edmonton, saskatoon, 12).
-
-conexion(saskatoon, calgary, 9).
-conexion(saskatoon, winnipeg, 20).
-
-conexion(regina, saskatoon, 7).
-conexion(regina, winnipeg, 4).
-
-
+ciudad(vancouver, [arista(edmonton, 16), arista(calgary, 13)]).
+ciudad(calgary, [arista(edmonton, 4), arista(regina, 14)]).
+ciudad(edmonton, [arista(saskatoon, 12)]).
+ciudad(saskatoon, [arista(calgary, 9), arista(winnipeg, 20)]).
+ciudad(regina, [arista(saskatoon, 7), arista(winnipeg, 4)]).
 
 % REGLA 1: determinar si un nodo tiene aristas
-
-
+% (mantiene la consulta original: ?- tiene_aristas(calgary).)
 tiene_aristas(X) :-
-    conexion(X, _, _).
+    ciudad(X, Rutas),
+    Rutas \= [].
 
-
-
-% REGLA 2: obtener los nodos conectados
-% y el costo de cada conexión
-
-
+% REGLA 2: obtener los nodos conectados y el costo de cada conexión
+% (mantiene la consulta original: ?- conectado_directamente(regina, Nodo, Costo).)
 conectado_directamente(X, Y, Costo) :-
-    conexion(X, Y, Costo).
+    ciudad(X, Rutas),
+    miembro(arista(Y, Costo), Rutas).
 
-
-
-% REGLA 3: determinar si existe un camino
-% entre dos nodos
-
-
+% REGLA 3: determinar si existe un camino entre dos nodos
+% (mantiene la consulta original: ?- es_posible_viajar(edmonton, calgary).)
 camino(X, Z, Camino) :-
     camino_aux(X, Z, [X], Camino).
 
 camino_aux(Z, Z, Visitados, Visitados).
 
 camino_aux(X, Z, Visitados, Camino) :-
-    conexion(X, Y, _),
-    \+ member(Y, Visitados),
-    camino_aux(Y, Z, [Y|Visitados], Camino).
+    ciudad(X, Rutas),
+    miembro(arista(Y, _), Rutas),
+    \+ miembro(Y, Visitados),
+    camino_aux(Y, Z, [Y | Visitados], Camino).
 
-
-
-% REGLA 4: determinar el costo para ir
-% de X a Z pasando por Y
-
-
+% REGLA 4: determinar el costo para ir de X a Z pasando por Y
 costo_pasando_por(X, Z, Y, CostoTotal) :-
-    conexion(X, Y, CostoXY),
-    conexion(Y, Z, CostoYZ),
+    conectado_directamente(X, Y, CostoXY),
+    conectado_directamente(Y, Z, CostoYZ),
     CostoTotal is CostoXY + CostoYZ.
 
-
-
-% REGLA 5: verificar si es posible viajar
-% de X a Z
-
-
+% REGLA 5: verificar si es posible viajar de X a Z
 es_posible_viajar(X, Z) :-
     camino(X, Z, _).
 
+% Consultas originales:
+% -?- es_posible_viajar(saskatoon, vancouver).
+% -?- conectado_directamente(regina, Nodo, Costo).
+% -?- tiene_aristas(calgary).
+% -?- tiene_aristas(X).
+% -?- costo_pasando_por(X, Z, Y, Costo).
+% -?- es_posible_viajar(edmonton, calgary).
 
-
-
-%conexion Saskatoon → Vancouver
-%"?- es_posible_viajar(saskatoon, vancouver).
-%el resultado es false, ya que no hay un camino directo ni indirecto desde Saskatoon hasta Vancouver en el grafo definido.
-
-%nodos conectados a regina y costos de cada conexión
-%"?- conectado_directamente(regina, Nodo, Costo).
-
-
-
-%regla probar si nodo tiene aristas
-%"?- tiene_aristas(calgary).
-
-%Ver todos los nodos que tienen aristas
-%"?- tiene_aristas(X).
-
-
-%Costo de ir de X a Z pasando por Y
-%"?- costo_pasando_por(X, Z, Y, Costo).
-
-%existe camino de edmonton a calgary
-%"?- es_posible_viajar(edmonton, calgary).
-%el resultado es false, ya que no hay un camino directo ni indirecto desde Edmonton hasta Calgary en el grafo definido.

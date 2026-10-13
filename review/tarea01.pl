@@ -1,67 +1,53 @@
-%EJERCICIO 1
+% EJERCICIO 1: FAMILIA SIMPSON
+% Se reescribe usando estructuras y listas para representar
+% la información de cada persona y sus relaciones parentales.
 
-% HECHOS
+% Estructura: persona(Nombre, [padre(Padre), madre(Madre)])
+persona(herbert, [padre(abraham), madre(mona)]).
+persona(homero, [padre(abraham), madre(mona)]).
+persona(marge, [padre(clancy), madre(jacqueline)]).
+persona(patty, [padre(clancy), madre(jacqueline)]).
+persona(selma, [padre(clancy), madre(jacqueline)]).
+persona(bart, [padre(homero), madre(marge)]).
+persona(lisa, [padre(homero), madre(marge)]).
+persona(maggie, [padre(homero), madre(marge)]).
+persona(ling, [madre(selma)]).
 
+% Se mantienen las consultas originales mediante las reglas que
+% extraen la información de la estructura/lista.
+padre(X, Y) :-
+    persona(Y, Relaciones),
+    miembro(padre(X), Relaciones).
 
-% Abraham y Mona
-padre(abraham, herbert).
-padre(abraham, homero).
+madre(X, Y) :-
+    persona(Y, Relaciones),
+    miembro(madre(X), Relaciones).
 
-madre(mona, herbert).
-madre(mona, homero).
-
-% Clancy y Jacqueline
-padre(clancy, marge).
-padre(clancy, patty).
-padre(clancy, selma).
-
-madre(jacqueline, marge).
-madre(jacqueline, patty).
-madre(jacqueline, selma).
-
-% Homero y Marge
-padre(homero, bart).
-padre(homero, lisa).
-padre(homero, maggie).
-
-madre(marge, bart).
-madre(marge, lisa).
-madre(marge, maggie).
-
-% Selma
-madre(selma, ling).
-
-
-% REGLAS
-
-
-% Una persona es progenitor si es padre o madre
+% Una persona es progenitor si es padre o madre.
 progenitor(X, Y) :-
     padre(X, Y).
 
 progenitor(X, Y) :-
     madre(X, Y).
 
-
-% Abuelo
+% Abuelo.
 abuelo(X, Z) :-
     padre(X, Y),
     progenitor(Y, Z).
 
-
-% Abuela
+% Abuela.
 abuela(X, Z) :-
     madre(X, Y),
     progenitor(Y, Z).
 
+% Consultas originales:
+% -?- abuelo(X, bart).
+% -?- abuela(X, bart).
 
-    ?- abuelo(X, bart).
-
-   
-   
-    %EJERCICIO 2
-
-    % Hechos
+% ------------------------------------------------------------------
+% EJERCICIO 2: CRIMINAL
+% Se conserva la misma lógica de inferencia, sin cambiar
+% la consulta principal.
 
 estadounidense(west).
 
@@ -71,16 +57,10 @@ arma(misiles).
 
 vendio(west, misiles, corea_del_sur).
 
-
-% Regla
-
 criminal(X) :-
     estadounidense(X),
     vendio(X, Y, Z),
     arma(Y),
     hostil(Z).
 
-    
-
-
-?- criminal(west).
+% -?- criminal(west).
